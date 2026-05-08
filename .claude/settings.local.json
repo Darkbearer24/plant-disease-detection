@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/agarg/Downloads/MAJOR2/_archive/docs\")",
+      "Bash(mv \"C:/Users/agarg/Downloads/MAJOR2/model.py\" \"C:/Users/agarg/Downloads/MAJOR2/_archive/\")",
+      "Bash(mv \"C:/Users/agarg/Downloads/MAJOR2/plant-disease-object-detection-project-yolov11.ipynb\" \"C:/Users/agarg/Downloads/MAJOR2/_archive/\")",
+      "Bash(mv \"C:/Users/agarg/Downloads/MAJOR2/colab_train.ipynb\" \"C:/Users/agarg/Downloads/MAJOR2/_archive/\")",
+      "Bash(mv \"C:/Users/agarg/Downloads/MAJOR2/Vision_Trasformer.pdf\" \"C:/Users/agarg/Downloads/MAJOR2/_archive/docs/\")"
+    ]
+  }
+}

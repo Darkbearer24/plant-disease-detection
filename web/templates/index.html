@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantDoc — Plant Disease Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Header
+============================================================ -->
+<header>
+  <div class="container">
+    <div class="inner">
+      <div class="logo">🌿</div>
+      <div>
+        <h1>Plant Disease Detector</h1>
+        <p>YOLOv11 + Vision Transformer · PlantDoc · 30 Classes</p>
+      </div>
+
+      <!-- Model status badges -->
+      <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+        <span class="badge {% if yolo_ready %}ready{% else %}pending{% endif %}">
+          🎯 YOLO {% if yolo_ready %}Ready{% else %}Not trained{% endif %}
+        </span>
+        <span class="badge {% if vit_ready %}ready{% else %}pending{% endif %}">
+          🔬 ViT {% if vit_ready %}Ready{% else %}Not trained{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     Main
+============================================================ -->
+<main class="container">
+
+  <!-- Upload Section -->
+  <section class="upload-section">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="image/*">
+      <div class="icon">📸</div>
+      <h2>Drop a leaf image here</h2>
+      <p>or click to browse &nbsp;·&nbsp; JPG, PNG, WEBP</p>
+      <img id="preview-img" alt="Preview">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-yolo" disabled>
+        <div class="spinner"></div>
+        🎯 Run YOLO
+      </button>
+      <button class="btn btn-secondary" id="btn-vit" disabled>
+        <div class="spinner"></div>
+        🔬 Run ViT
+      </button>
+      <button class="btn btn-accent" id="btn-both" disabled>
+        <div class="spinner"></div>
+        ⚡ Compare Both
+      </button>
+    </div>
+  </section>
+
+  <!-- Demo Gallery (pre-cached results, shown when available) -->
+  {% if demo_ready and demo_gallery %}
+  <section style="padding: 8px 0 32px;">
+    <h2 style="font-size:1rem; font-weight:600; color:var(--text-muted); margin-bottom:14px; letter-spacing:0.05em; text-transform:uppercase;">
+      ⚡ Pre-cached Demo Results
+    </h2>
+    <div id="demo-gallery" style="display:flex; gap:10px; flex-wrap:wrap;">
+      {% for item in demo_gallery %}
+      <button class="demo-thumb-btn"
+              data-id="{{ item.id }}"
+              title="{{ item.filename }}"
+              onclick="loadDemoResult('{{ item.id }}')">
+        {{ item.filename[:20] }}{% if item.filename|length > 20 %}…{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">
+      Click any tile to instantly load a pre-computed result — no GPU needed.
+    </p>
+  </section>
+  {% endif %}
+
+  <!-- Results Section -->
+  <section class="results-section" id="results-section">
+    <!-- Populated by JS -->
+    <div class="empty-state" id="initial-hint">
+      <div class="icon">🌱</div>
+      <p>Upload a leaf image and choose a model to get predictions.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     Footer
+============================================================ -->
+<footer>
+  <div class="container">
+    <p>
+      Dataset: <a href="https://universe.roboflow.com/joseph-nelson/plantdoc/dataset/1" target="_blank">PlantDoc</a>
+      &nbsp;·&nbsp; CC BY 4.0
+      &nbsp;·&nbsp; Model: YOLOv11n + google/vit-base-patch16-224
+    </p>
+  </div>
+</footer>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
