@@ -23,6 +23,9 @@ dataset/crops/
 .DS_Store
 Thumbs.db
 
+# Claude Code
+.claude/
+
 # Credentials
 kaggle.json
 *.env
