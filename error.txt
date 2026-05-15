@@ -1,0 +1,680 @@
+===========================================================
+  Step 3 — Train Vision Transformer classifier
+============================================================
+
+  [SKIP] --skip-vit set — skipping ViT training.
+  [OK] Step 'train_vit' done in 0s
+
+============================================================
+  Step 4 — Evaluate both models
+============================================================
+
+  Running: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe evaluate.py --config config/config.yaml
+
+============================================================
+Evaluating ViT...
+[transformers] You passed `num_labels=30` which is incompatible to the `id2label` map of length `1000`.
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 4086.86it/s]
+[transformers] ViTForImageClassification LOAD REPORT from: google/vit-base-patch16-224
+Key               | Status   |
+------------------+----------+-------------------------------------------------------------------------------------------
+classifier.bias   | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000]) vs model:torch.Size([30])
+classifier.weight | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000, 768]) vs model:torch.Size([30, 768])
+
+Notes:
+- MISMATCH:     ckpt weights were loaded, but they did not match the original empty weight shapes.
+ViT FPS: 23.1 (100 images in 4.32s)
+                                      precision    recall  f1-score   support
+
+                          Apple leaf       0.88      0.97      0.92       237
+                     Apple rust leaf       0.89      0.99      0.94       167
+                     Apple Scab Leaf       0.88      0.87      0.88       158
+                    Bell_pepper leaf       0.89      0.84      0.87       248
+               Bell_pepper leaf spot       0.91      0.96      0.93       312
+                      Blueberry leaf       0.97      0.96      0.96       816
+                         Cherry leaf       0.82      1.00      0.90       220
+                 Corn Gray leaf spot       0.88      0.64      0.74        72
+                    Corn leaf blight       0.90      0.96      0.93       356
+                      Corn rust leaf       0.96      0.94      0.95       117
+                          grape leaf       0.96      0.96      0.96       125
+                grape leaf black rot       0.98      0.98      0.98       205
+                          Peach leaf       0.97      0.87      0.92       579
+                         Potato leaf       0.81      0.77      0.79       235
+            Potato leaf early blight       1.00      0.18      0.31        11
+             Potato leaf late blight       0.87      0.69      0.77       301
+                      Raspberry leaf       0.97      0.98      0.98       539
+                       Soyabean leaf       0.97      0.95      0.96       246
+                        Soybean leaf       1.00      0.80      0.89        15
+          Squash Powdery mildew leaf       0.98      0.98      0.98       248
+                     Strawberry leaf       0.98      1.00      0.99       443
+            Tomato Early blight leaf       0.80      0.71      0.75       193
+                         Tomato leaf       0.84      0.97      0.90       759
+          Tomato leaf bacterial spot       0.89      0.85      0.87       373
+             Tomato leaf late blight       0.75      0.73      0.74       266
+            Tomato leaf mosaic virus       0.75      0.92      0.82       204
+            Tomato leaf yellow virus       0.95      0.62      0.75       225
+                    Tomato mold leaf       0.84      0.80      0.82       279
+           Tomato Septoria leaf spot       0.85      0.90      0.88       402
+Tomato two spotted spider mites leaf       0.00      0.00      0.00         2
+
+                            accuracy                           0.90      8353
+                           macro avg       0.87      0.83      0.84      8353
+                        weighted avg       0.90      0.90      0.90      8353
+
+============================================================
+Evaluating YOLO (as classifier on crops)...
+
+============================================================
+RESULTS SUMMARY
+============================================================
+
+YOLO:
+  Accuracy         : 0.5250
+  Precision (macro): 0.5397
+  Recall (macro)   : 0.4358
+  F1 (macro)       : 0.4428
+  FPS              : 42.1
+
+ViT:
+  Accuracy         : 0.8997
+  Precision (macro): 0.8712
+  Recall (macro)   : 0.8264
+  F1 (macro)       : 0.8356
+  FPS              : 23.1
+
+Outputs saved to runs\evaluation/
+  [OK] Step 'evaluate' done in 8m 27s
+
+============================================================
+  Step 5 — Prepare demo gallery cache
+============================================================
+
+  Running: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe prepare_demo.py
+
+Loading YOLO from runs/detect/runs/detect/train/weights/best.pt...
+Loading ViT from runs/vit/best.pt...
+[transformers] You passed `num_labels=30` which is incompatible to the `id2label` map of length `1000`.
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 3686.60it/s]
+[transformers] ViTForImageClassification LOAD REPORT from: google/vit-base-patch16-224
+Key               | Status   |
+------------------+----------+-------------------------------------------------------------------------------------------
+classifier.weight | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000, 768]) vs model:torch.Size([30, 768])
+classifier.bias   | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000]) vs model:torch.Size([30])
+
+Notes:
+- MISMATCH:     ckpt weights were loaded, but they did not match the original empty weight shapes.
+
+Selected 20 demo images.
+  [01/20] 00_jpg.rf.7fa2b9652948e8c39a51a68ec5c6b70a.jpg | YOLO: 3 det(s)Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 159, in <module>
+    main()
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 131, in main
+    overlay, _ = vit_inf.attention_heatmap(img)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 269, in attention_heatmap
+    attn_map = get_attention_map(self.model, tensor)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 91, in get_attention_map
+    model(img_tensor)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\utils\generic.py", line 900, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\models\vit\modeling_vit.py", line 634, in forward
+    outputs: BaseModelOutputWithPooling = self.vit(
+                                          ^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\utils\generic.py", line 976, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\utils\output_capturing.py", line 248, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\models\vit\modeling_vit.py", line 452, in forward
+    encoder_outputs: BaseModelOutput = self.encoder(embedding_output)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\models\vit\modeling_vit.py", line 362, in forward
+    hidden_states = layer_module(hidden_states, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\modeling_layers.py", line 93, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\models\vit\modeling_vit.py", line 334, in forward
+    attention_output = self.attention(hidden_states_norm, **kwargs)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\transformers\models\vit\modeling_vit.py", line 282, in forward
+    self_attn_output, _ = self.attention(hidden_states, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1844, in _call_impl
+    return inner()
+           ^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\torch\nn\modules\module.py", line 1803, in inner
+    hook_result = hook(self, args, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 84, in _hook
+    attentions.append(output.detach())
+                      ^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'detach'
+  [ERROR] prepare_demo failed (exit code 1)
+
+============================================================
+  Pipeline Summary
+============================================================
+
+  0. Download weights               0s  [done]
+  1. Train YOLO                     0s  [done]
+  2. Extract crops                  0s  [done]
+  3. Train ViT                      0s  [done]
+  4. Evaluate                   8m 27s  [done]
+  5. Prepare demo                  16s  [FAILED]
+
+  Total time: 8m 43s
+  [ERROR]
+Pipeline stopped at step 'demo'. Fix the error above and re-run.
+  [ERROR] Already-completed steps will be skipped automatically on the next run.
+
+
+
+===========================================================
+  Step 0 — Download ViT backbone weights
+============================================================
+
+  [SKIP] Backbone cache already exists — skipping download.
+  [OK] Step 'download' done in 0s
+
+============================================================
+  Step 1 — Train YOLO detector
+============================================================
+
+  [SKIP] --skip-yolo set — skipping YOLO training.
+  [OK] Step 'train_yolo' done in 0s
+
+============================================================
+  Step 2 — Extract crops from YOLO labels
+============================================================
+
+  [SKIP] Crops directory already populated at dataset\crops — skipping extraction.
+  [OK] Step 'crops' done in 0s
+
+============================================================
+  Step 3 — Train Vision Transformer classifier
+============================================================
+
+  [SKIP] --skip-vit set — skipping ViT training.
+  [OK] Step 'train_vit' done in 0s
+
+============================================================
+  Step 4 — Evaluate both models
+============================================================
+
+  [SKIP] --skip-eval set — skipping evaluation.
+  [OK] Step 'evaluate' done in 0s
+
+============================================================
+  Step 5 — Prepare demo gallery cache
+============================================================
+
+  Running: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe prepare_demo.py
+
+Loading YOLO from runs/detect/runs/detect/train/weights/best.pt...
+Loading ViT from runs/vit/best.pt...
+[transformers] You passed `num_labels=30` which is incompatible to the `id2label` map of length `1000`.
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 7951.74it/s]
+[transformers] ViTForImageClassification LOAD REPORT from: google/vit-base-patch16-224
+Key               | Status   |
+------------------+----------+-------------------------------------------------------------------------------------------
+classifier.bias   | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000]) vs model:torch.Size([30])
+classifier.weight | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000, 768]) vs model:torch.Size([30, 768])
+
+Notes:
+- MISMATCH:     ckpt weights were loaded, but they did not match the original empty weight shapes.
+
+Selected 20 demo images.
+  [01/20] 11_40580_5_jpg.rf.48758cb9de89e21d815c527e41624e9c.jpg | YOLO: 26 det(s)Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 159, in <module>
+    main()
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 131, in main
+    overlay, _ = vit_inf.attention_heatmap(img)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 270, in attention_heatmap
+    attn_map = get_attention_map(self.model, tensor)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 102, in get_attention_map
+    cls_attn = attn[0, 1:]             # (num_patches,)  ignore [CLS]→[CLS]
+               ~~~~^^^^^^^
+IndexError: too many indices for tensor of dimension 1
+  [ERROR] prepare_demo failed (exit code 1)
+
+============================================================
+  Pipeline Summary
+============================================================
+
+  0. Download weights               0s  [done]
+  1. Train YOLO                     0s  [done]
+  2. Extract crops                  0s  [done]
+  3. Train ViT                      0s  [done]
+  4. Evaluate                       0s  [done]
+  5. Prepare demo                  11s  [FAILED]
+
+  Total time: 11s
+  [ERROR]
+Pipeline stopped at step 'demo'. Fix the error above and re-run.
+  [ERROR] Already-completed steps will be skipped automatically on the next run.
+
+ Running: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe prepare_demo.py
+
+Loading YOLO from runs/detect/runs/detect/train/weights/best.pt...
+Loading ViT from runs/vit/best.pt...
+[transformers] You passed `num_labels=30` which is incompatible to the `id2label` map of length `1000`.
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 7951.74it/s]
+[transformers] ViTForImageClassification LOAD REPORT from: google/vit-base-patch16-224
+Key               | Status   |
+------------------+----------+-------------------------------------------------------------------------------------------
+classifier.bias   | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000]) vs model:torch.Size([30])
+classifier.weight | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000, 768]) vs model:torch.Size([30, 768])
+
+Notes:
+- MISMATCH:     ckpt weights were loaded, but they did not match the original empty weight shapes.
+
+Selected 20 demo images.
+  [01/20] 11_40580_5_jpg.rf.48758cb9de89e21d815c527e41624e9c.jpg | YOLO: 26 det(s)Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 159, in <module>
+    main()
+  File "C:\Users\agarg\Downloads\MAJOR2\prepare_demo.py", line 131, in main
+    overlay, _ = vit_inf.attention_heatmap(img)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 270, in attention_heatmap
+    attn_map = get_attention_map(self.model, tensor)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\models\vit_classifier.py", line 102, in get_attention_map
+    cls_attn = attn[0, 1:]             # (num_patches,)  ignore [CLS]→[CLS]
+               ~~~~^^^^^^^
+IndexError: too many indices for tensor of dimension 1
+  [ERROR] prepare_demo failed (exit code 1)
+
+============================================================
+  Pipeline Summary
+============================================================
+
+  0. Download weights               0s  [done]
+  1. Train YOLO                     0s  [done]
+  2. Extract crops                  0s  [done]
+  3. Train ViT                      0s  [done]
+  4. Evaluate                       0s  [done]
+  5. Prepare demo                  11s  [FAILED]
+
+  Total time: 11s
+  [ERROR]
+Pipeline stopped at step 'demo'. Fix the error above and re-run.
+  [ERROR] Already-completed steps will be skipped automatically on the next run.
+
+C:\Users\agarg\Downloads\MAJOR2>  .venv\Scripts\python run_pipeline.py --skip-download --skip-yolo --skip-vit --skip-eval
+
+Plant Disease Detection — Full Pipeline
+Config: config/config.yaml
+Python: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe
+
+
+============================================================
+  Step 0 — Download ViT backbone weights
+============================================================
+
+  [SKIP] Backbone cache already exists — skipping download.
+  [OK] Step 'download' done in 0s
+
+============================================================
+  Step 1 — Train YOLO detector
+============================================================
+
+  [SKIP] --skip-yolo set — skipping YOLO training.
+  [OK] Step 'train_yolo' done in 0s
+
+============================================================
+  Step 2 — Extract crops from YOLO labels
+============================================================
+
+  [SKIP] Crops directory already populated at dataset\crops — skipping extraction.
+  [OK] Step 'crops' done in 0s
+
+============================================================
+  Step 3 — Train Vision Transformer classifier
+============================================================
+
+  [SKIP] --skip-vit set — skipping ViT training.
+  [OK] Step 'train_vit' done in 0s
+
+============================================================
+  Step 4 — Evaluate both models
+============================================================
+
+  [SKIP] --skip-eval set — skipping evaluation.
+  [OK] Step 'evaluate' done in 0s
+
+============================================================
+  Step 5 — Prepare demo gallery cache
+============================================================
+
+  Running: C:\Users\agarg\Downloads\MAJOR2\.venv\Scripts\python.exe prepare_demo.py
+
+Loading YOLO from runs/detect/runs/detect/train/weights/best.pt...
+Loading ViT from runs/vit/best.pt...
+[transformers] You passed `num_labels=30` which is incompatible to the `id2label` map of length `1000`.
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 8218.32it/s]
+[transformers] ViTForImageClassification LOAD REPORT from: google/vit-base-patch16-224
+Key               | Status   |
+------------------+----------+-------------------------------------------------------------------------------------------
+classifier.weight | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000, 768]) vs model:torch.Size([30, 768])
+classifier.bias   | MISMATCH | Reinit due to size mismatch - ckpt: torch.Size([1000]) vs model:torch.Size([30])
+
+Notes:
+- MISMATCH:     ckpt weights were loaded, but they did not match the original empty weight shapes.
+
+Selected 20 demo images.
+  [01/20] 636227737977191231_septoria_leaf_spot_VT_jpg.rf.d06820dfad4e145270ddf84fd927ee98.jpg | YOLO: 7 det(s) | ViT: Tomato Septoria leaf spot
+  [02/20] three_raspberry_green_leaves_isolated_white_background_62022932_jpg.rf.2a8cec0249470b1dcfa65ee154ca92f5.jpg | YOLO: 5 det(s) | ViT: Raspberry leaf
+  [03/20] 1684_jpg.rf.cbfc897f8e7f51b9da504d4a5c597b8f.jpg | YOLO: 5 det(s) | ViT: Tomato leaf bacterial spot
+  [04/20] strawberry_leaves_collection_white_background_36684676_jpg.rf.081c27c3719fd626b2b90677f8b7674e.jpg | YOLO: 8 det(s) | ViT: Strawberry leaf
+  [05/20] 9511_img_jpg.rf.2b2a1dce2226ac7182876af33c2889e1.jpg | YOLO: 7 det(s) | ViT: Tomato leaf bacterial spot
+  [06/20] strawberry_leaf__stock_photo_1431216_jpg.rf.5161eac01721ab59709cd768c47c4eea.jpg | YOLO: 3 det(s) | ViT: Strawberry leaf
+  [07/20] D_29AlfMov_jpg.rf.f56360becd23fe1038f5c4ccfdcda690.jpg | YOLO: 4 det(s) | ViT: Tomato mold leaf
+  [08/20] iron_deficiency_raspberry_leaf_chlorosis_isolated_32457798_jpg.rf.51961fc3b431ad288d20b1bd9a8b0858.jpg | YOLO: 3 det(s) | ViT: Raspberry leaf
+  [09/20] 55830b60a7cf2_image_jpg.rf.088f2e428bba35c7aab1bcbfd251329c.jpg | YOLO: 5 det(s) | ViT: Tomato Septoria leaf spot
+  [10/20] Soybean_20edamame_20leaf1_JPG_jpg.rf.852e5a872a31bebe7d848f1b9b664589.jpg | YOLO: 3 det(s) | ViT: Soyabean leaf
+  [11/20] depositphotos_1323551_stock_photo_raspberry_leaves_jpg.rf.43f356ccfc3c4ee0145f4b0f654e3100.jpg | YOLO: 3 det(s) | ViT: Raspberry leaf
+  [12/20] 17fc47_jpg.rf.fe1c3b512f4182d08f00ac2c612ddb1c.jpg | YOLO: 12 det(s) | ViT: Tomato leaf bacterial spot
+  [13/20] dscn3175_jpg.rf.85c7b517ea4d59289f83a8f41ec2de6e.jpg | YOLO: 2 det(s) | ViT: Tomato Early blight leaf
+  [14/20] stock_photo_fresh_soy_leaves_isolated_on_white_94266130_jpg.rf.16b494c4174328cb661deecd82e98ec9.jpg | YOLO: 4 det(s) | ViT: Soyabean leaf
+  [15/20] leaf_raspberry_isolated_on_a_white_stock_photography_image_10106222_1625198_jpg.rf.b40f0d55b7b10fd43ca514e4986c76db.jpg | YOLO: 5 det(s) | ViT: Tomato leaf bacterial spot
+  [16/20] prunsero_leaf2_jpg.rf.67467099986a4a6c8ff3696ed9323b6f.jpg | YOLO: 3 det(s) | ViT: Cherry leaf
+  [17/20] tmv_tomato_34_jpg.rf.a990055f9ae18d7a57319cfbf5851b5a.jpg | YOLO: 2 det(s) | ViT: Tomato leaf late blight
+  [18/20] ill_tomato_of_tomato_mosaic_virus_DBE17N_jpg.rf.23b91bd552b8b6c3ff5226d42cae43c5.jpg | YOLO: 5 det(s) | ViT: Tomato leaf late blight
+  [19/20] strawberry_leaves_stock_image_948674_jpg.rf.1b80d2f5c222eefd640b2b66d2778d14.jpg | YOLO: 3 det(s) | ViT: Strawberry leaf
+  [20/20] strawberry_leaves_isolated_white_34722259_jpg.rf.6d181c401112796ffc4e84d8db151d08.jpg | YOLO: 3 det(s) | ViT: Strawberry leaf
+
+Cached 20 demo results → demo_cache/
+Demo images copied → demo_images/
+
+On presentation day, drag any image from demo_images/ into the dashboard.
+  [OK] Step 'demo' done in 12s
+
+============================================================
+  Pipeline Summary
+============================================================
+
+  0. Download weights               0s  [done]
+  1. Train YOLO                     0s  [done]
+  2. Extract crops                  0s  [done]
+  3. Train ViT                      0s  [done]
+  4. Evaluate                       0s  [done]
+  5. Prepare demo                  12s  [done]
+
+  Total time: 12s
+  [OK]
+All steps complete!
+
+  Web dashboard: python web/app.py  →  http://localhost:8000
+  Single image:  python predict.py <image.jpg> --show --attention
+
+
+
+============================================================
+  Pipeline Summary
+============================================================
+
+  0. Download weights               0s  [done]
+  1. Train YOLO                     0s  [done]
+  2. Extract crops                  0s  [done]
+  3. Train ViT                      0s  [done]
+  4. Evaluate                       0s  [done]
+  5. Prepare demo                  12s  [done]
+
+  Total time: 12s
+  [OK]
+All steps complete!
+
+  Web dashboard: python web/app.py  →  http://localhost:8000
+  Single image:  python predict.py <image.jpg> --show --attention
+
+
+C:\Users\agarg\Downloads\MAJOR2>  .venv\Scripts\python web\app.py
+Starting server at http://0.0.0.0:8000
+INFO:     Started server process [28892]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63242 - "GET / HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 328, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\web\app.py", line 135, in index
+    return templates.TemplateResponse("index.html", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 148, in TemplateResponse
+    template = self.get_template(name)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 115, in get_template
+    return self.env.get_template(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 964, in _load_template
+    template = self.cache.get(cache_key)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 477, in get
+    return self[key]
+           ~~~~^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 515, in __getitem__
+    rv = self._mapping[key]
+         ~~~~~~~~~~~~~^^^^^
+TypeError: unhashable type: 'dict'
+INFO:     127.0.0.1:65300 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65300 - "GET / HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 328, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\web\app.py", line 135, in index
+    return templates.TemplateResponse("index.html", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 148, in TemplateResponse
+    template = self.get_template(name)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 115, in get_template
+    return self.env.get_template(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 964, in _load_template
+    template = self.cache.get(cache_key)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 477, in get
+    return self[key]
+           ~~~~^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 515, in __getitem__
+    rv = self._mapping[key]
+         ~~~~~~~~~~~~~^^^^^
+TypeError: unhashable type: 'dict'
+INFO:     127.0.0.1:59848 - "GET / HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\fastapi\routing.py", line 328, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\web\app.py", line 135, in index
+    return templates.TemplateResponse("index.html", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 148, in TemplateResponse
+    template = self.get_template(name)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\starlette\templating.py", line 115, in get_template
+    return self.env.get_template(name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\environment.py", line 964, in _load_template
+    template = self.cache.get(cache_key)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 477, in get
+    return self[key]
+           ~~~~^^^^^
+  File "C:\Users\agarg\Downloads\MAJOR2\.venv\Lib\site-packages\jinja2\utils.py", line 515, in __getitem__
+    rv = self._mapping[key]
+         ~~~~~~~~~~~~~^^^^^
+TypeError: unhashable type: 'dict'

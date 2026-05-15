@@ -7,7 +7,7 @@ dataset:
 
 yolo:
   weights: "yolo11n.pt"
-  trained_weights: "runs/detect/train/weights/best.pt"
+  trained_weights: "runs/detect/runs/detect/train/weights/best.pt"
   epochs: 50
   imgsz: 640
   batch: 16
@@ -17,11 +17,11 @@ vit:
   backbone: "google/vit-base-patch16-224"
   checkpoint: "runs/vit/best.pt"
   epochs: 20
-  batch_size: 32
-  lr: 2.0e-5
+  batch_size: 16
+  lr: 1.0e-5
   weight_decay: 1.0e-4
   imgsz: 224
-  num_workers: 4
+  num_workers: 0
   patience: 5                  # early stopping patience
 
 web:

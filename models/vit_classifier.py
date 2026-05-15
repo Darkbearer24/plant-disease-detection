@@ -77,26 +77,13 @@ def get_attention_map(model, img_tensor: torch.Tensor) -> np.ndarray:
     Returns: (H_patches, W_patches) float32 numpy array, values in [0, 1].
     """
     model.eval()
-    attentions = []
-
-    def _hook(module, input, output):
-        # output is (batch, heads, seq_len, seq_len)
-        attentions.append(output.detach())
-
-    # Register hook on the last attention layer
-    last_attn = model.vit.encoder.layer[-1].attention.attention
-    handle = last_attn.register_forward_hook(_hook)
-
     with torch.no_grad():
-        model(img_tensor)
+        outputs = model(img_tensor, output_attentions=True)
 
-    handle.remove()
-
-    if not attentions:
+    if not outputs.attentions:
         return np.zeros((14, 14), dtype=np.float32)
 
-    attn = attentions[0]               # (1, heads, seq+1, seq+1)
-    # Average over heads, take [CLS] → patch tokens
+    attn = outputs.attentions[-1]      # last layer: (1, heads, seq+1, seq+1)
     attn = attn[0].mean(0)             # (seq+1, seq+1)
     cls_attn = attn[0, 1:]             # (num_patches,)  ignore [CLS]→[CLS]
     n = int(cls_attn.shape[0] ** 0.5)
@@ -233,18 +220,19 @@ class ViTInference:
         self.model.to(self.device)
         self.model.eval()
 
+    def _to_pil(self, image) -> Image.Image:
+        if isinstance(image, str):
+            return Image.open(image).convert("RGB")
+        elif isinstance(image, np.ndarray):
+            return Image.fromarray(image).convert("RGB")
+        return image.convert("RGB")
+
     def predict(self, image, top_k: int = 3):
         """
         image: str path, PIL.Image, or np.ndarray.
         Returns list of {class_name, confidence} sorted by confidence desc.
         """
-        if isinstance(image, str):
-            image = Image.open(image).convert("RGB")
-        elif isinstance(image, np.ndarray):
-            image = Image.fromarray(image).convert("RGB")
-        else:
-            image = image.convert("RGB")
-
+        image = self._to_pil(image)
         tensor = self.transform(image).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
@@ -253,6 +241,36 @@ class ViTInference:
             probs = torch.softmax(logits, dim=1)[0]
 
         topk = probs.topk(top_k)
+        return [
+            {"class_name": self.class_names[idx], "confidence": float(conf)}
+            for conf, idx in zip(topk.values, topk.indices)
+        ]
+
+    def predict_tta(self, image, top_k: int = 3):
+        """
+        Test-time augmentation: run 4 passes (original, h-flip, v-flip, center
+        crop) and average the softmax probabilities before picking top-k.
+        Typically adds 2-3% accuracy with no retraining.
+        """
+        image = self._to_pil(image)
+        W, H  = image.size
+        augmented = [
+            image,
+            image.transpose(Image.FLIP_LEFT_RIGHT),
+            image.transpose(Image.FLIP_TOP_BOTTOM),
+            image.crop((W // 10, H // 10, W * 9 // 10, H * 9 // 10)),
+        ]
+
+        all_probs = []
+        with torch.no_grad():
+            for aug in augmented:
+                tensor = self.transform(aug).unsqueeze(0).to(self.device)
+                out    = self.model(tensor)
+                logits = out.logits if hasattr(out, "logits") else out
+                all_probs.append(torch.softmax(logits, dim=1)[0])
+
+        avg_probs = torch.stack(all_probs).mean(0)
+        topk = avg_probs.topk(top_k)
         return [
             {"class_name": self.class_names[idx], "confidence": float(conf)}
             for conf, idx in zip(topk.values, topk.indices)

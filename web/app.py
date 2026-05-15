@@ -99,6 +99,22 @@ def ndarray_to_b64(arr: np.ndarray) -> str:
     return pil_to_b64(Image.fromarray(arr.astype(np.uint8)))
 
 
+def crop_best_detection(img: Image.Image, detections: list, margin: float = 0.05) -> Image.Image:
+    """Return the highest-confidence YOLO crop, with a small margin. Falls back to full image."""
+    if not detections:
+        return img
+    best = max(detections, key=lambda d: d["conf"])
+    x1, y1, x2, y2 = [int(v) for v in best["box"]]
+    W, H = img.size
+    pad_x = int((x2 - x1) * margin)
+    pad_y = int((y2 - y1) * margin)
+    x1 = max(0, x1 - pad_x)
+    y1 = max(0, y1 - pad_y)
+    x2 = min(W, x2 + pad_x)
+    y2 = min(H, y2 + pad_y)
+    return img.crop((x1, y1, x2, y2))
+
+
 # ---------------------------------------------------------------------------
 # Demo cache helpers
 # ---------------------------------------------------------------------------
@@ -132,8 +148,7 @@ async def index(request: Request):
     vit_ready    = Path(VIT_CKPT).exists()
     demo_ready   = (DEMO_CACHE_DIR / "manifest.json").exists()
     demo_gallery = get_demo_manifest() if demo_ready else []
-    return templates.TemplateResponse("index.html", {
-        "request":      request,
+    return templates.TemplateResponse(request, "index.html", {
         "yolo_ready":   yolo_ready,
         "vit_ready":    vit_ready,
         "demo_ready":   demo_ready,
@@ -183,8 +198,14 @@ async def predict_vit(file: UploadFile = File(...)):
     data = await file.read()
     img  = Image.open(io.BytesIO(data)).convert("RGB")
 
-    predictions = infer.predict(img, top_k=5)
-    overlay, _  = infer.attention_heatmap(img)
+    # Use YOLO crop if available so ViT sees what it was trained on
+    crop = img
+    if Path(YOLO_WEIGHTS).exists():
+        detections = get_yolo().predict_image(img, conf=CONF)
+        crop = crop_best_detection(img, detections)
+
+    predictions = infer.predict_tta(crop, top_k=5)
+    overlay, _  = infer.attention_heatmap(crop)
 
     return JSONResponse({
         "predictions":    predictions,
@@ -210,14 +231,17 @@ async def predict_both(file: UploadFile = File(...)):
             "annotated_image": ndarray_to_b64(rendered),
         }
 
-    # ViT
+    # ViT — classify the best YOLO crop (or full image if no detections)
     infer = get_vit()
     if infer:
-        predictions = infer.predict(img, top_k=5)
-        overlay, _  = infer.attention_heatmap(img)
+        detections = result.get("yolo", {}).get("detections", [])
+        crop        = crop_best_detection(img, detections)
+        predictions = infer.predict_tta(crop, top_k=5)
+        overlay, _  = infer.attention_heatmap(crop)
         result["vit"] = {
             "predictions":    predictions,
             "attention_image": pil_to_b64(overlay),
+            "used_crop":       detections != [],
         }
 
     result["original_image"] = pil_to_b64(img)

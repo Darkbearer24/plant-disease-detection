@@ -69,7 +69,22 @@ def main():
             class_names=class_names,
             backbone=vc["backbone"],
         )
-        predictions = infer.predict(img, top_k=args.topk)
+
+        # Use best YOLO crop — ViT was trained on crops, not full images
+        vit_input = img
+        if detections:
+            best = max(detections, key=lambda d: d["conf"])
+            x1, y1, x2, y2 = [int(v) for v in best["box"]]
+            W, H = img.size
+            pad_x = int((x2 - x1) * 0.05)
+            pad_y = int((y2 - y1) * 0.05)
+            vit_input = img.crop((max(0, x1 - pad_x), max(0, y1 - pad_y),
+                                   min(W, x2 + pad_x), min(H, y2 + pad_y)))
+            print(f"  (classifying best YOLO crop: {best['cls_name']} conf={best['conf']:.2f})")
+        else:
+            print("  (no YOLO detections — classifying full image)")
+
+        predictions = infer.predict_tta(vit_input, top_k=args.topk)
         for p in predictions:
             bar = "█" * int(p["confidence"] * 30)
             print(f"  {p['class_name']:<40s}  {bar}  {p['confidence']:.1%}")
@@ -90,9 +105,9 @@ def main():
         axes[0].axis("off")
 
         if show_attn:
-            overlay, _ = infer.attention_heatmap(img)
+            overlay, _ = infer.attention_heatmap(vit_input)
             axes[1].imshow(overlay)
-            axes[1].set_title("ViT Attention Heatmap")
+            axes[1].set_title("ViT Attention Heatmap (on crop)" if detections else "ViT Attention Heatmap")
             axes[1].axis("off")
         elif args.attention and not vit_available:
             print("[attention] Skipped — ViT checkpoint not found.")
